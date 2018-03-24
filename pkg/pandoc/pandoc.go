@@ -2,10 +2,10 @@ package pandoc
 
 import (
 	"fmt"
-	"log"
 	"os/exec"
 
 	"github.com/fsnotify/fsnotify"
+	log "github.com/sirupsen/logrus"
 )
 
 // RunPandocListener takes a directory to listen to, then should print the
@@ -50,15 +50,15 @@ func CompileAndRefresh(baseFilename string) {
 	var err error
 	err = compileMarkdownToPdf(baseFilename)
 	if err != nil {
-		log.Fatal("Could not compile markdown to pdf using base filename: " + baseFilename)
+		log.Warning("Could not compile markdown to pdf using base filename: " + baseFilename)
 	}
 	err = openPreview(baseFilename)
 	if err != nil {
-		log.Fatal("Could not open Preview")
+		log.Fatal("Could not open a pdf viewer")
 	}
 	err = openMacVim()
 	if err != nil {
-		log.Fatal("Could not open MacVim")
+		log.Fatal("Could not open an editor")
 	}
 }
 
@@ -87,9 +87,9 @@ func compileMarkdownToPdf(baseFilename string) error {
 // openPreview uses mac's command open to refocus Preview.app
 // (or open the file if its not open)
 func openPreview(baseFilename string) error {
-	openPath, err := exec.LookPath("open")
+	openPath, err := exec.LookPath("okular")
 	if err != nil {
-		log.Fatal("Could not find an installation of open")
+		log.Fatal("Could not find an installation of xdg-open")
 	}
 	file := fmt.Sprintf("%s.pdf", baseFilename)
 	cmd := exec.Command(openPath, file)
@@ -98,10 +98,10 @@ func openPreview(baseFilename string) error {
 
 // openMacVim uses mac's command open to refocus MacVim.app
 func openMacVim() error {
-	openPath, err := exec.LookPath("open")
+	openPath, err := exec.LookPath("subl")
 	if err != nil {
 		log.Fatal("Could not find an installation of open")
 	}
-	cmd := exec.Command(openPath, "-a", "MacVim")
+	cmd := exec.Command(openPath, "subl")
 	return cmd.Run()
 }

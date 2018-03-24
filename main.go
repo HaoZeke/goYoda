@@ -5,14 +5,14 @@ import (
 	"log"
 	"os"
 
-	"github.com/EntilZha/pandoc-viewer/pandoc"
-	"github.com/codegangsta/cli"
+	"github.com/HaoZeke/goYoda/pkg/pandoc"
+	"github.com/urfave/cli"
 )
 
 func main() {
 	app := cli.NewApp()
-	app.Name = "Pandoc Viewer"
-	app.Usage = "Auto compile pandoc files, focus Preview to update, refocus MacVim for continued editing"
+	app.Name = "goYoda"
+	app.Usage = "Pandoc for turtles with go."
 	wd, err := os.Getwd()
 	if err != nil {
 		log.Fatal("Could not get the current working directory")
