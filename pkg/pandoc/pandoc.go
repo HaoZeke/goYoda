@@ -19,43 +19,41 @@ package pandoc
 import (
 	"fmt"
 	"os/exec"
+	"strings"
 
-	"github.com/fsnotify/fsnotify"
+	"github.com/rjeczalik/notify"
 	log "github.com/sirupsen/logrus"
 )
 
 // RunPandocListener takes a directory to listen to, then should print the
 // different changes that occur within it
 func RunPandocListener(directory string) {
-	watcher, err := fsnotify.NewWatcher()
-	if err != nil {
-		log.Fatal("Could not make a watcher")
-	}
-	defer watcher.Close()
+	// Make the channel buffered to ensure no event is dropped. Notify will drop
+	// an event if the receiver is not able to keep up the sending pace.
+	c := make(chan notify.EventInfo, 1)
 
-	done := make(chan bool)
-	go func() {
-		for {
-			select {
-			case ev := <-watcher.Events:
-				handleFileChange(ev)
-			case err := <-watcher.Errors:
-				log.Fatal("Error", err)
-			}
+	// Set up a watchpoint listening for events within a directory tree rooted
+	// at current working directory. Dispatch remove events to c.
+	if err := notify.Watch(directory, c, notify.InCloseWrite, notify.InMovedTo); err != nil {
+		log.Fatal(err)
+	}
+	defer notify.Stop(c)
+
+	// Block until an event is received.
+	for {
+		ei := <-c
+		log.Info("Got event:", ei)
+		handleFileChange(ei)
+		if strings.Contains(ei.Path(), "spooky-action") {
+			CompileAndRefresh("spooky-action")
 		}
-	}()
-
-	err = watcher.Add(directory)
-	if err != nil {
-		log.Fatal("Could not watch the directory: " + directory)
 	}
-	<-done
 }
 
 // handFileChange handles the file listener event, checks if its on a *.md file
 // and is the final change (mac makes various different file changes when rewriting
 // a file using MacVim.
-func handleFileChange(event fsnotify.Event) {
+func handleFileChange(event notify.EventInfo) {
 	fmt.Println(event)
 }
 
@@ -66,7 +64,7 @@ func CompileAndRefresh(baseFilename string) {
 	var err error
 	err = compileMarkdownToPdf(baseFilename)
 	if err != nil {
-		log.Warning("Could not compile markdown to pdf using base filename: " + baseFilename)
+		log.Fatal("Could not compile markdown to pdf using base filename: " + baseFilename)
 	}
 	err = openPreview(baseFilename)
 	if err != nil {
