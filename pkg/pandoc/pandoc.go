@@ -19,6 +19,7 @@ package pandoc
 import (
 	"fmt"
 	"os/exec"
+	fp "path/filepath"
 	"strings"
 
 	"github.com/rjeczalik/notify"
@@ -44,9 +45,6 @@ func RunPandocListener(directory string) {
 		ei := <-c
 		log.Info("Got event:", ei)
 		handleFileChange(ei)
-		if strings.Contains(ei.Path(), "spooky-action") {
-			CompileAndRefresh("spooky-action")
-		}
 	}
 }
 
@@ -54,7 +52,14 @@ func RunPandocListener(directory string) {
 // and is the final change (mac makes various different file changes when rewriting
 // a file using MacVim.
 func handleFileChange(event notify.EventInfo) {
-	fmt.Println(event)
+	if strings.Contains(event.Path(), ".md") {
+		file, err := fp.Glob(event.Path())
+		if err != nil {
+			log.Fatal(err)
+		}
+		// strings.Join(file, " ") gives the filename
+		CompileAndRefresh(strings.TrimSuffix(strings.Join(file, " "), fp.Ext(strings.Join(file, " "))))
+	}
 }
 
 // CompileAndRefresh recompiles the given *.md file into *.pdf, refocuses
@@ -70,7 +75,7 @@ func CompileAndRefresh(baseFilename string) {
 	if err != nil {
 		log.Fatal("Could not open a pdf viewer")
 	}
-	err = openMacVim()
+	err = openMacVim(baseFilename)
 	if err != nil {
 		log.Fatal("Could not open an editor")
 	}
@@ -111,11 +116,12 @@ func openPreview(baseFilename string) error {
 }
 
 // openMacVim uses mac's command open to refocus MacVim.app
-func openMacVim() error {
+func openMacVim(baseFilename string) error {
 	openPath, err := exec.LookPath("subl")
 	if err != nil {
 		log.Fatal("Could not find an installation of open")
 	}
-	cmd := exec.Command(openPath, "subl")
+	file := fmt.Sprintf("%s.md", baseFilename)
+	cmd := exec.Command(openPath, file)
 	return cmd.Run()
 }

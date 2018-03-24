@@ -22,3 +22,6 @@
 
 # No vendors
 vendor/
+
+# Temporary test
+d/*
