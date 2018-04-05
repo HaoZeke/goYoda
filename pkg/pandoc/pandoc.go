@@ -44,41 +44,47 @@ func RunPandocListener(directory string) {
 	for {
 		ei := <-c
 		log.Info("Got event:", ei)
-		handleFileChange(ei)
+		handleFileChanges(ei)
 	}
 }
 
 // handFileChange handles the file listener event, checks if its on a *.md file
-// and is the final change (mac makes various different file changes when rewriting
-// a file using MacVim.
-func handleFileChange(event notify.EventInfo) {
-	if strings.Contains(event.Path(), ".md") {
-		file, err := fp.Glob(event.Path())
-		if err != nil {
-			log.Fatal(err)
-		}
-		// strings.Join(file, " ") gives the filename
-		CompileAndRefresh(strings.TrimSuffix(strings.Join(file, " "), fp.Ext(strings.Join(file, " "))))
+// and is the final change (makes various different file changes when rewriting
+// a file.
+func handleFileChanges(event notify.EventInfo) {
+	switch {
+	case strings.Contains(event.Path(), ".md"):
+		markdownChanges(event)
 	}
 }
 
+func markdownChanges(event notify.EventInfo) {
+	file, err := fp.Glob(event.Path())
+	if err != nil {
+		log.Fatal(err)
+	}
+	// strings.Join(file, " ") gives the filename
+	CompileAndRefresh(strings.TrimSuffix(strings.Join(file, " "), fp.Ext(strings.Join(file, " "))))
+}
+
 // CompileAndRefresh recompiles the given *.md file into *.pdf, refocuses
-// Preview.app so that it picks up the changes on disk, then refocuses
-// MacVim.app to continue editing.
+// so that it picks up the changes on disk, then refocuses
+// to continue editing.
 func CompileAndRefresh(baseFilename string) {
 	var err error
 	err = compileMarkdownToPdf(baseFilename)
 	if err != nil {
-		log.Fatal("Could not compile markdown to pdf using base filename: " + baseFilename)
+		log.Info("Could not compile markdown to pdf using base filename: " + baseFilename)
+		log.Error(err)
 	}
-	err = openPreview(baseFilename)
-	if err != nil {
-		log.Fatal("Could not open a pdf viewer")
-	}
-	err = openMacVim(baseFilename)
-	if err != nil {
-		log.Fatal("Could not open an editor")
-	}
+	// err = openPreview(baseFilename)
+	// if err != nil {
+	// 	log.Fatal("Could not open a pdf viewer")
+	// }
+	// err = openEditor(baseFilename)
+	// if err != nil {
+	// 	log.Fatal("Could not open an editor")
+	// }
 }
 
 // FindFile is given a filename, then it attempts to find where that file is
@@ -96,14 +102,32 @@ func compileMarkdownToPdf(baseFilename string) error {
 	if err != nil {
 		log.Fatal("Could not find an installation of pandoc")
 	}
-	input := fmt.Sprintf("%s.md", baseFilename)
-	output := fmt.Sprintf("%s.pdf", baseFilename)
-	cmd := exec.Command(pandocPath, input, "-o", output)
-	return cmd.Run()
+	texPath, err := exec.LookPath("latexmk")
+	if err != nil {
+		log.Fatal("Could not find an installation of latexmk")
+	}
+	inpMd := fmt.Sprintf("%s.md", baseFilename)
+	outTex := fmt.Sprintf("%s.tex", baseFilename)
+	cmdTex := exec.Command(pandocPath, inpMd, "--standalone", "-o", outTex)
+	errTex := cmdTex.Run()
+	if errTex != nil {
+		log.Fatal(err)
+	}
+	config, err := fp.Glob("d/.latexmkrc")
+	if err != nil {
+		log.Fatal(err)
+	}
+	configTex, err := fp.Abs(strings.Join(config, " "))
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println(configTex)
+	cmdPdf := exec.Command(texPath, "-silent", "-f", "-r", configTex, outTex)
+	return cmdPdf.Run()
 
 }
 
-// openPreview uses mac's command open to refocus Preview.app
+// openPreview uses open to refocus the viewwer
 // (or open the file if its not open)
 func openPreview(baseFilename string) error {
 	openPath, err := exec.LookPath("okular")
@@ -115,8 +139,8 @@ func openPreview(baseFilename string) error {
 	return cmd.Run()
 }
 
-// openMacVim uses mac's command open to refocus MacVim.app
-func openMacVim(baseFilename string) error {
+// openEditor uses mac's command open to refocus the editor
+func openEditor(baseFilename string) error {
 	openPath, err := exec.LookPath("subl")
 	if err != nil {
 		log.Fatal("Could not find an installation of open")
