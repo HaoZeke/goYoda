@@ -23,5 +23,8 @@
 # No vendors, use dep ensure instead
 vendor/
 
+# Don't commit the default binary
+goYoda
+
 # Binaries [goreleaser]
 dist/
