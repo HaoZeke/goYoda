@@ -2,12 +2,6 @@
 
 
 [[projects]]
-  name = "github.com/fsnotify/fsnotify"
-  packages = ["."]
-  revision = "c2828203cd70a50dcccfb2761f8b1f8ceef9a8e9"
-  version = "v1.4.7"
-
-[[projects]]
   branch = "master"
   name = "github.com/rjeczalik/notify"
   packages = ["."]
@@ -18,6 +12,15 @@
   packages = ["."]
   revision = "c155da19408a8799da419ed3eeb0cb5db0ad5dbc"
   version = "v1.0.5"
+
+[[projects]]
+  name = "github.com/spf13/afero"
+  packages = [
+    ".",
+    "mem"
+  ]
+  revision = "63644898a8da0bc22138abf860edaf5277b6102e"
+  version = "v1.1.0"
 
 [[projects]]
   name = "github.com/urfave/cli"
@@ -40,9 +43,28 @@
   ]
   revision = "91ee8cde435411ca3f1cd365e8f20131aed4d0a1"
 
+[[projects]]
+  name = "golang.org/x/text"
+  packages = [
+    "internal/gen",
+    "internal/triegen",
+    "internal/ucd",
+    "transform",
+    "unicode/cldr",
+    "unicode/norm"
+  ]
+  revision = "f21a4dfb5e38f5895301dc265a8def02365cc3d0"
+  version = "v0.3.0"
+
+[[projects]]
+  branch = "v2"
+  name = "gopkg.in/urfave/cli.v2"
+  packages = ["."]
+  revision = "d3ae77c26ac8db90639677e4831a728d33c36111"
+
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "005f7b4380adfc4a8f4b136b0bf98283ddd74355c05c37e01751faf288c2d548"
+  inputs-digest = "923f1b3960897d1b3e46a92ed63b939f625f6b7b3e5f639ac942bc7a95fa9de7"
   solver-name = "gps-cdcl"
   solver-version = 1
