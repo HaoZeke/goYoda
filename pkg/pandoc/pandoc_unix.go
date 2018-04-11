@@ -14,13 +14,16 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+// Build Constraints [see https://stackoverflow.com/questions/19847594/how-to-reliably-detect-os-platform-in-go]
+
+// +build !windows
+
 package pandoc
 
 import (
 	"fmt"
 	"os/exec"
 	fp "path/filepath"
-	"runtime"
 	"strings"
 
 	"github.com/rjeczalik/notify"
@@ -36,16 +39,9 @@ func DirWatcher(directory string) {
 
 	// Set up a watchpoint listening for events within a directory tree rooted
 	// at current working directory. Dispatch remove events to c.
-	if runtime.GOOS == "windows" {
-		if err := notify.Watch(directory, c, notify.Create, notify.Remove); err != nil {
-			log.Fatal(err)
-		}
-	} else {
-		if err := notify.Watch(directory, c, notify.InCloseWrite, notify.InMovedTo); err != nil {
-			log.Fatal(err)
-		}
+	if err := notify.Watch(directory, c, notify.InCloseWrite, notify.InMovedTo); err != nil {
+		log.Fatal(err)
 	}
-
 	defer notify.Stop(c)
 
 	// Block until an event is received.
