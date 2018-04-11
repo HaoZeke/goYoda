@@ -3,7 +3,7 @@ builds:
   - binary: goyoda
     goos:
       - windows
-      - darwin
+      # - darwin
       - linux
     goarch:
       - amd64
