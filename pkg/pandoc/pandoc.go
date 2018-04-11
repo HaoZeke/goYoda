@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"os/exec"
 	fp "path/filepath"
+	"runtime"
 	"strings"
 
 	"github.com/rjeczalik/notify"
@@ -35,9 +36,16 @@ func DirWatcher(directory string) {
 
 	// Set up a watchpoint listening for events within a directory tree rooted
 	// at current working directory. Dispatch remove events to c.
-	if err := notify.Watch(directory, c, notify.InCloseWrite, notify.InMovedTo); err != nil {
-		log.Fatal(err)
+	if runtime.GOOS == "windows" {
+		if err := notify.Watch(directory, c, notify.Create, notify.Remove); err != nil {
+			log.Fatal(err)
+		}
+	} else {
+		if err := notify.Watch(directory, c, notify.InCloseWrite, notify.InMovedTo); err != nil {
+			log.Fatal(err)
+		}
 	}
+
 	defer notify.Stop(c)
 
 	// Block until an event is received.
