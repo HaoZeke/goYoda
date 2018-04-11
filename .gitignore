@@ -28,3 +28,6 @@ goYoda
 
 # Binaries [goreleaser]
 dist/
+
+# No packer go cruft
+*-packr.go
