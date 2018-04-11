@@ -18,6 +18,7 @@ package setup
 
 import (
 	"bufio"
+	"strings"
 
 	"github.com/gobuffalo/packr"
 	log "github.com/sirupsen/logrus"
@@ -51,14 +52,23 @@ func createDirs(projName string) {
 }
 
 func createFiles(projName string) {
-	file, err := box.Open("files")
+	// Convert the []string to have newlines
+	stringSlices := strings.Join(box.List(), "\n")
+
+	// Add a file containing every filename in the box
+	box.AddBytes("filego", []byte(stringSlices))
+
+	// Readin the box contents
+	file, err := box.Open("filego")
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer file.Close()
 
+	// Buffered read of file
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
+		// For every line in the file create a corresponding file
 		s := box.Bytes(scanner.Text())
 		afs.WriteFile((projName + "/" + scanner.Text()), s, 0755)
 	}
