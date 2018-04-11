@@ -23,5 +23,5 @@
 # No vendors
 vendor/
 
-# Temporary test
-d/*
+# Binaries [goreleaser]
+dist/
