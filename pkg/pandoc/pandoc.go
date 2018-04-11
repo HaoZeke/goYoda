@@ -117,7 +117,7 @@ func openPreview(baseFilename string) error {
 	return cmd.Run()
 }
 
-// openEditor uses mac's command open to refocus the editor
+// openEditor uses open to refocus the editor
 func openEditor(baseFilename string) error {
 	openPath, err := exec.LookPath("subl")
 	if err != nil {
