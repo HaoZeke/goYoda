@@ -7,3 +7,14 @@ builds:
       - linux
     goarch:
       - amd64
+    hooks:
+      pre: packr -z
+      post: packr clean
+sign:
+   artifacts: checksum
+changelog:
+  filters:
+    exclude:
+      - '^docs:'
+      - typo
+      - (?i)foo
