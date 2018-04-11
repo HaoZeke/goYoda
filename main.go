@@ -17,9 +17,9 @@
 package main
 
 import (
-	"fmt"
-	"log"
 	"os"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/HaoZeke/goYoda/internal/filesystem/setup"
 	"github.com/HaoZeke/goYoda/pkg/pandoc"
@@ -27,20 +27,45 @@ import (
 )
 
 func main() {
+
 	app := cli.NewApp()
 	app.Name = "goYoda"
 	app.Usage = "Pandoc for turtles with go."
+
 	wd, err := os.Getwd()
 	if err != nil {
 		log.Fatal("Could not get the current working directory")
 	}
+
+	app.Flags = []cli.Flag{
+		cli.BoolFlag{
+			Name:  "new, n",
+			Usage: "Create a new project folder scaffold",
+		},
+		cli.BoolFlag{
+			Name:  "background, b",
+			Usage: "Watch and compile a file or directory",
+		},
+	}
+
+	app.Action = func(c *cli.Context) error {
+		switch {
+		case c.Bool("new"):
+			setup.CreateProj(c.Args().First())
+		case c.Bool("b"):
+			log.Info("Running pandoc listener...")
+			pandoc.DirWatcher(wd + "/" + c.Args().First())
+		}
+		return nil
+	}
+
 	app.Commands = []cli.Command{
 		{
 			Name:      "background",
 			ShortName: "b",
 			Usage:     "Start service which listens on input folder or current working directory, detecting changes to *.md and recompiling them to *.pdf",
 			Action: func(c *cli.Context) {
-				fmt.Println("Running pandoc listener...")
+				log.Info("Running pandoc listener...")
 				pandoc.DirWatcher(wd + "/" + c.Args().First())
 			},
 		},
@@ -50,14 +75,6 @@ func main() {
 			Usage:     "Compile given file (without .md extension) to pdf",
 			Action: func(c *cli.Context) {
 				pandoc.CompileAndRefresh(wd + "/" + c.Args().First())
-			},
-		},
-		{
-			Name:      "make",
-			ShortName: "m",
-			Usage:     "Make a directory",
-			Action: func(c *cli.Context) {
-				setup.CreateProj(c.Args().First())
 			},
 		},
 	}

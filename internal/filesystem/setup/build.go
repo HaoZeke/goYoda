@@ -24,8 +24,8 @@ import (
 var AppFs = afero.NewOsFs()
 
 func CreateProj(projName string) {
-	log.Info("Hi, so you're getting a new project")
-	log.Info("You said you want the project to be called " + projName)
+	log.Info("Setting project up")
+	log.Info("Project Name: " + projName)
 	createDirs(projName)
 }
 
