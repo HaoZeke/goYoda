@@ -52,3 +52,7 @@
 [[override]]
   name = "github.com/goreleaser/goreleaser"
   version = "0.66.1"
+
+[[constraint]]
+  name = "github.com/gobuffalo/packr"
+  version = "1.10.11"

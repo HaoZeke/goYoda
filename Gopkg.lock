@@ -2,6 +2,18 @@
 
 
 [[projects]]
+  name = "github.com/gobuffalo/packr"
+  packages = ["."]
+  revision = "1da2bc3e527d59dfffe386a55e7a0583564db4d3"
+  version = "v1.10.11"
+
+[[projects]]
+  name = "github.com/pkg/errors"
+  packages = ["."]
+  revision = "645ef00459ed84a119197bfb8d8205042c6df63d"
+  version = "v0.8.0"
+
+[[projects]]
   branch = "master"
   name = "github.com/rjeczalik/notify"
   packages = ["."]
@@ -59,6 +71,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "b27bb97dbe97b8c8adc88a5bde1a32fba0ad1b10acc976f138a96cf5ac77adc2"
+  inputs-digest = "82fdbd51b56c5b2b860d253a7b31a4062bdd9f20105ce02b9e3bf5d0ac551a02"
   solver-name = "gps-cdcl"
   solver-version = 1
