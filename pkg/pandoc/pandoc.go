@@ -26,6 +26,28 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+// dirWatcher takes a directory to listen to, then should print the
+// different changes that occur within it
+func DirWatcher(directory string) {
+	// Make the channel buffered to ensure no event is dropped. Notify will drop
+	// an event if the receiver is not able to keep up the sending pace.
+	c := make(chan notify.EventInfo, 1)
+
+	// Set up a watchpoint listening for events within a directory tree rooted
+	// at current working directory. Dispatch remove events to c.
+	if err := notify.Watch(directory, c, notify.InCloseWrite, notify.InMovedTo); err != nil {
+		log.Fatal(err)
+	}
+	defer notify.Stop(c)
+
+	// Block until an event is received.
+	for {
+		ei := <-c
+		log.Info("Got event:", ei)
+		handleFileChanges(ei)
+	}
+}
+
 // handFileChange handles the file listener event, checks if its on a *.md file
 // and is the final change (makes various different file changes when rewriting
 // a file.
