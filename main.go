@@ -20,7 +20,7 @@ import (
 	"os"
 
 	"github.com/HaoZeke/goYoda/internal/filesystem/setup"
-	"github.com/HaoZeke/goYoda/pkg/pandoc"
+	"github.com/HaoZeke/goYoda/internal/filesystem/watchers"
 	log "github.com/sirupsen/logrus"
 	"github.com/urfave/cli"
 )
@@ -39,7 +39,7 @@ func main() {
 	app.Flags = []cli.Flag{
 		cli.BoolTFlag{
 			Name:  "tex, t",
-			Usage: "Uses latexmk and generates an intermediate .tex file",
+			Usage: "Uses latexmk and generates an intermediate .tex file [default]",
 		},
 		cli.BoolFlag{
 			Name:  "edit, e",
@@ -65,7 +65,7 @@ func main() {
 			Usage:     "Watch and compile a file or directory",
 			Action: func(c *cli.Context) error {
 				log.Info("Running pandoc listener...")
-				pandoc.DirWatcher(wd + "/" + c.Args().First())
+				watch.DirWatcher(wd + "/" + c.Args().First())
 				return nil
 			},
 		},
